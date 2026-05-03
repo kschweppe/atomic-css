@@ -49,31 +49,17 @@
 
       overlay = final: prev: {
         overriddenHaskellPackages = {
-          ghc982 = (prev.overriddenHaskellPackages.ghc982 or prev.haskell.packages.ghc982).override (old: {
+          ghc984 = (prev.overriddenHaskellPackages.ghc984 or prev.haskell.packages.ghc984).override (old: {
             overrides = prev.lib.composeExtensions (old.overrides or (_: _: { })) (
               hfinal: hprev: {
                 "${packageName}" = hfinal.callCabal2nix packageName src { };
-                skeletest = hprev.skeletest.overrideAttrs (old: {
-                  meta = old.meta // {
-                    broken = false;
-                  };
-                });
-                Diff = hfinal.callHackage "Diff" "0.5" { };
               }
             );
           });
-          ghc966 = (prev.overriddenHaskellPackages.ghc966 or prev.haskell.packages.ghc966).override (old: {
+          ghc967 = (prev.overriddenHaskellPackages.ghc967 or prev.haskell.packages.ghc967).override (old: {
             overrides = prev.lib.composeExtensions (old.overrides or (_: _: { })) (
               hfinal: hprev: {
                 "${packageName}" = hfinal.callCabal2nix packageName src { };
-                attoparsec-aeson = hfinal.callHackage "attoparsec-aeson" "2.2.0.0" { };
-                skeletest = hprev.skeletest.overrideAttrs (old: {
-                  meta = old.meta // {
-                    broken = false;
-                  };
-                });
-                Diff = hfinal.callHackage "Diff" "0.5" { };
-                aeson = hfinal.callHackage "aeson" "2.2.2.0" { };
               }
             );
           });
@@ -102,8 +88,8 @@
         };
 
         ghcVersions = [
-          "966"
-          "982"
+          "967"
+          "984"
         ];
 
         ghcPkgs = builtins.listToAttrs (
@@ -125,7 +111,7 @@
             hlint.enable = true;
             fourmolu.enable = true;
             hpack.enable = true;
-            nixfmt-rfc-style.enable = true;
+            nixfmt.enable = true;
             flake-checker = {
               enable = true;
               args = [ "--no-telemetry" ];
@@ -171,60 +157,58 @@
             value = pkgs.runCommand "ghc${version}-check-example" {
               buildInputs = [
                 (exe version)
-              ] ++ self.devShells.${system}."ghc${version}-shell".buildInputs;
+              ]
+              ++ self.devShells.${system}."ghc${version}-shell".buildInputs;
             } "type example; CABAL_CONFIG=/dev/null cabal --dry-run repl; touch $out";
           }) ghcVersions
         );
 
-        apps =
-          {
-            default = self.apps.${system}."ghc966-${examplesName}";
-          }
-          // builtins.listToAttrs (
-            map (version: {
+        apps = {
+          default = self.apps.${system}."ghc967-${examplesName}";
+        }
+        // builtins.listToAttrs (
+          map (version: {
+            name = "ghc${version}-${examplesName}";
+            value = {
+              type = "app";
+              program = "${exe version}/bin/example";
+            };
+          }) ghcVersions
+        );
+
+        packages = {
+          default = self.packages.${system}."ghc984-${packageName}";
+        }
+        // builtins.listToAttrs (
+          builtins.concatMap (version: [
+            {
               name = "ghc${version}-${examplesName}";
-              value = {
-                type = "app";
-                program = "${exe version}/bin/example";
-              };
-            }) ghcVersions
-          );
+              value = ghcPkgs."ghc${version}".${examplesName};
+            }
+            {
+              name = "ghc${version}-${packageName}";
+              value = ghcPkgs."ghc${version}".${packageName};
+            }
+          ]) ghcVersions
+        );
 
-        packages =
-          {
-            default = self.packages.${system}."ghc982-${packageName}";
-          }
-          // builtins.listToAttrs (
-            builtins.concatMap (version: [
-              {
-                name = "ghc${version}-${examplesName}";
-                value = ghcPkgs."ghc${version}".${examplesName};
+        devShells = {
+          default = self.devShells.${system}.ghc984-shell;
+        }
+        // builtins.listToAttrs (
+          map (version: {
+            name = "ghc${version}-shell";
+            value = ghcPkgs."ghc${version}".shellFor (
+              shellCommon version
+              // {
+                packages = p: [
+                  p.${packageName}
+                  p.${examplesName}
+                ];
               }
-              {
-                name = "ghc${version}-${packageName}";
-                value = ghcPkgs."ghc${version}".${packageName};
-              }
-            ]) ghcVersions
-          );
-
-        devShells =
-          {
-            default = self.devShells.${system}.ghc982-shell;
-          }
-          // builtins.listToAttrs (
-            map (version: {
-              name = "ghc${version}-shell";
-              value = ghcPkgs."ghc${version}".shellFor (
-                shellCommon version
-                // {
-                  packages = p: [
-                    p.${packageName}
-                    p.${examplesName}
-                  ];
-                }
-              );
-            }) ghcVersions
-          );
+            );
+          }) ghcVersions
+        );
       }
     );
 }

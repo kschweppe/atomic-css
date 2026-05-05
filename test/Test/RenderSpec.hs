@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Test.RenderSpec (spec) where
 
 import Control.Monad (zipWithM_)
-import Data.Text (Text, unpack)
+import Data.Text (Text)
 import Data.Text qualified as T
-import Data.Text.IO qualified as T
 import Skeletest
+import Text.RawString.QQ (r)
 import Web.Atomic.CSS
 import Web.Atomic.CSS.Select
 import Web.Atomic.Html
@@ -66,18 +67,18 @@ ruleSpec = do
     cssRuleLine (Rule.fromClass "hello") `shouldBe` Nothing
 
   it "renders media" $ do
-    let r = addMedia (MinWidth 100) $ rule "hello" ["key" :. "value"]
-    ruleClassName r `shouldBe` "mmnw100:hello"
-    ruleSelector r `shouldBe` ".mmnw100\\:hello"
-    cssRuleLine r `shouldBe` Just "@media (min-width: 100px) { .mmnw100\\:hello { key:value } }"
+    let rl = addMedia (MinWidth 100) $ rule "hello" ["key" :. "value"]
+    ruleClassName rl `shouldBe` "mmnw100:hello"
+    ruleSelector rl `shouldBe` ".mmnw100\\:hello"
+    cssRuleLine rl `shouldBe` Just "@media (min-width: 100px) { .mmnw100\\:hello { key:value } }"
 
   it "renders pseudo" $ do
-    let r = addPseudo "hover" $ rule "hello" ["key" :. "value"]
-    cssRuleLine r `shouldBe` Just ".hover\\:hello:hover { key:value }"
+    let rl = addPseudo "hover" $ rule "hello" ["key" :. "value"]
+    cssRuleLine rl `shouldBe` Just ".hover\\:hello:hover { key:value }"
 
   it "renders pseudo + media" $ do
-    let r = addMedia (MinWidth 100) $ addPseudo "hover" $ rule "hello" ["key" :. "value"]
-    cssRuleLine r `shouldBe` Just "@media (min-width: 100px) { .mmnw100\\:hover\\:hello:hover { key:value } }"
+    let rl = addMedia (MinWidth 100) $ addPseudo "hover" $ rule "hello" ["key" :. "value"]
+    cssRuleLine rl `shouldBe` Just "@media (min-width: 100px) { .mmnw100\\:hover\\:hello:hover { key:value } }"
 
 
 -- let c = mediaCond (MaxWidth 800) bold
@@ -200,7 +201,17 @@ htmlSpec = do
       renderText (tag "div" $ text "txt" >> tag "div" none >> text "txt") `shouldBe` "<div>\n  txt<div></div>\n  txt</div>"
 
     it "matches basic output with styles" $ do
-      basic <- T.readFile "test/resources/basic.txt"
+      let basic :: Text =
+            [r|<style type='text/css'>
+.bold { font-weight:bold }
+.col { display:flex; flex-direction:column }
+.p-10 { padding:0.625rem }
+</style>
+
+<div class='col p-10'>
+  <div class='bold'>hello</div>
+  <div>world</div>
+</div>|]
       let html = do
             row ~ pad 10 $ do
               el ~ bold $ "hello"
@@ -208,9 +219,9 @@ htmlSpec = do
       let out = renderText html
       zipWithM_ shouldBe (T.lines out) (T.lines basic)
 
-    it "intro example" $ do
-      let html = el ~ bold . pad 8 $ "Hello World"
-      mapM_ (putStrLn . unpack) $ T.lines $ renderText html
+    -- it "intro example" $ do
+    --   let html = el ~ bold . pad 8 $ "Hello World"
+    --   mapM_ (putStrLn . unpack) $ T.lines $ renderText html
 
     it "renders external classes" $ do
       renderText (el ~ cls "woot" $ none) `shouldBe` "<div class='woot'></div>"

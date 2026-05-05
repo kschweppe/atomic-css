@@ -64,26 +64,26 @@ spec = do
 
   describe "ancestor" $ do
     it "prepends selector" $ do
-      let r = addAncestor "htmx-request" "hello"
-      let cn = ruleClassName r
+      let rl = addAncestor "htmx-request" "hello"
+      let cn = ruleClassName rl
       cn `shouldBe` "htmx-request:hello"
-      ruleSelector r `shouldBe` ".htmx-request " <> selector cn
+      ruleSelector rl `shouldBe` ".htmx-request " <> selector cn
 
     it "ancestor + pseudo" $ do
-      let r = addAncestor "htmx-request" $ addPseudo "hover" "hello"
-      let cn = ruleClassName r
+      let rl = addAncestor "htmx-request" $ addPseudo "hover" "hello"
+      let cn = ruleClassName rl
       cn `shouldBe` "htmx-request:hover:hello"
-      ruleSelector r `shouldBe` ".htmx-request " <> selector cn <> ":hover"
+      ruleSelector rl `shouldBe` ".htmx-request " <> selector cn <> ":hover"
 
     -- what dopes this mean? Are they the same?
     -- hover (ancestor "htmx-request" "bold")
     -- ancestor "htmx-request" (hover "bold")
     -- certain things should be outermost....
     it "pseudo + ancestor" $ do
-      let r = addPseudo "hover" $ addAncestor "htmx-request" "hello"
-      let cn = ruleClassName r
+      let rl = addPseudo "hover" $ addAncestor "htmx-request" "hello"
+      let cn = ruleClassName rl
       cn `shouldBe` "hover:htmx-request:hello"
-      ruleSelector r `shouldBe` ".htmx-request " <> selector cn <> ":hover"
+      ruleSelector rl `shouldBe` ".htmx-request " <> selector cn <> ":hover"
 
     it "ignores when custom selector" $ do
       let r = addAncestor "htmx-request" $ addPseudo "hover" $ (rule "hello" []){selector = CustomRule ".woot"}

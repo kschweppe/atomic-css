@@ -112,6 +112,7 @@ test-suite test
     , file-embed >=0.0.10 && <0.1
     , html-entities >=1.1.4.7 && <1.2
     , http-types ==0.12.*
+    , raw-strings-qq
     , skeletest
     , text >=1.2 && <3
   default-language: GHC2021

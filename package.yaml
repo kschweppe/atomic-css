@@ -67,3 +67,4 @@ tests:
     dependencies:
       - atomic-css
       - skeletest
+      - raw-strings-qq

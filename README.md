@@ -90,7 +90,7 @@ If you want to get a feel for atomic-css without cloning the project run `nix ru
 Import Flake
 ------------
 
-You can import this flake's overlay to add `atomic-css` to `overriddenHaskellPackages` and which provides a ghc966 and ghc982 package set that satisfy `atomic-css`'s dependencies.
+You can import this flake's overlay to add `atomic-css` to `overriddenHaskellPackages` and which provides a ghc967 and ghc984 package set that satisfy `atomic-css`'s dependencies.
 
 ```nix
 {
@@ -108,7 +108,7 @@ You can import this flake's overlay to add `atomic-css` to `overriddenHaskellPac
           inherit system;
           overlays = [ atomic-css.overlays.default ];
         };
-        haskellPackagesOverride = pkgs.overriddenHaskellPackages.ghc966.override (old: {
+        haskellPackagesOverride = pkgs.overriddenHaskellPackages.ghc967.override (old: {
           overrides = pkgs.lib.composeExtensions (old.overrides or (_: _: { })) (hfinal: hprev: {
             # your overrides here
           });
@@ -142,13 +142,13 @@ ghcid --command="cabal repl test lib:atomic-css" --run=Main.main --warnings --re
 
 ### Nix
 
-- `nix flake check` will build the library, example executable and devShell with ghc-9.8.2 and ghc-9.6.6
+- `nix flake check` will build the library, example executable and devShell with ghc-9.8.4 and ghc-9.6.7
     - This is what the CI on GitHub runs
-- `nix run` or `nix run .#ghc982-example` to start the example project with GHC 9.8.2
-    - `nix run .#ghc966-example` to start the example project with GHC 9.6.6
-- `nix develop` or `nix develop .#ghc982-shell` to get a shell with all dependencies installed for GHC 9.8.2. 
-    - `nix develop .#ghc966-shell` to get a shell with all dependencies installed for GHC 9.6.6. 
-- `nix build`, `nix build .#ghc982-atomic-css` and `nix build .#ghc966-atomic-css` builds the library with the `overriddenHaskellPackages`
+- `nix run` or `nix run .#ghc984-example` to start the example project with GHC 9.8.4
+    - `nix run .#ghc967-example` to start the example project with GHC 9.6.7
+- `nix develop` or `nix develop .#ghc984-shell` to get a shell with all dependencies installed for GHC 9.8.4. 
+    - `nix develop .#ghc967-shell` to get a shell with all dependencies installed for GHC 9.6.7. 
+- `nix build`, `nix build .#ghc984-atomic-css` and `nix build .#ghc967-atomic-css` builds the library with the `overriddenHaskellPackages`
     - If you want to import this flake, use the overlay
 - `nix flake update nixpkgs` will update the Haskell package sets and development tools
 
